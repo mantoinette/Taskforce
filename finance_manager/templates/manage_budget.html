@@ -1,0 +1,11 @@
+<h1>Manage Budget</h1>
+<ul>
+  {% for budget in budgets %}
+    <li>{{ budget.category.name }} - {{ budget.amount }}</li>
+  {% endfor %}
+</ul>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Add Budget</button>
+</form>
