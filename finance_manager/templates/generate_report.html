@@ -1,6 +1,166 @@
-<h1>Generate Report</h1>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Generate</button>
-</form>
+{% extends 'base.html' %}
+
+{% block title %}Generate Report{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .transactions-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .transactions-container h2 {
+            color: #2C3E50;
+        }
+        .income-row {
+            background-color: #d4edda !important; /* Light green */
+        }
+        .expense-row {
+            background-color: #f8d7da !important; /* Light red */
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="transactions-container">
+        <h2 class="text-center">Transaction List</h2>
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <label for="fromDate">From:</label>
+                <input type="date" id="fromDate" class="form-control">
+            </div>
+            <div>
+                <label for="toDate">To:</label>
+                <input type="date" id="toDate" class="form-control">
+            </div>
+            <div>
+                <label for="reportType">Type:</label>
+                <select id="reportType" class="form-select">
+                    <option value="all">All</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+            </div>
+            <div class="align-self-end">
+                <button id="filterButton" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </div>
+        <table class="table table-bordered transaction-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Transactions will be dynamically added here -->
+            </tbody>
+        </table>
+        <button id="downloadReport" class="btn btn-success w-100">Download Report</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    const fromDateInput = document.getElementById('fromDate');
+    const toDateInput = document.getElementById('toDate');
+    const reportTypeInput = document.getElementById('reportType');
+
+    // Function to filter transactions based on user input
+    function getFilteredTransactions() {
+        const fromDate = new Date(fromDateInput.value);
+        const toDate = new Date(toDateInput.value);
+        const reportType = reportTypeInput.value;
+
+        return transactions.filter(transaction => {
+            const transactionDate = new Date(transaction.date);
+            const isWithinDateRange =
+                (!fromDateInput.value || transactionDate >= fromDate) &&
+                (!toDateInput.value || transactionDate <= toDate);
+            const matchesType = reportType === 'all' || transaction.type.toLowerCase() === reportType.toLowerCase();
+
+            return isWithinDateRange && matchesType;
+        });
+    }
+
+    // Function to update the transaction table
+    function updateTransactionTable() {
+        const tableBody = document.querySelector('.transaction-table tbody');
+        tableBody.innerHTML = ''; // Clear current rows
+
+        const filteredTransactions = getFilteredTransactions();
+
+        filteredTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.classList.add(transaction.type.toLowerCase() === 'income' ? 'income-row' : 'expense-row');
+            row.innerHTML = `
+                <td>${transaction.date}</td>
+                <td>${transaction.amount}</td>
+                <td>${transaction.category}</td>
+                <td>${transaction.subcategory}</td>
+                <td>${transaction.type}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Handle report download as PDF
+    document.getElementById('downloadReport').addEventListener('click', function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Set up the PDF document
+        doc.setFontSize(16);
+        doc.text("Transaction Report", 14, 10);
+
+        // Add the header row for the table
+        doc.setFontSize(12);
+        doc.text("Date", 14, 20);
+        doc.text("Amount", 40, 20);
+        doc.text("Category", 80, 20);
+        doc.text("Subcategory", 120, 20);
+        doc.text("Type", 160, 20);
+
+        // Add each filtered transaction to the PDF
+        const filteredTransactions = getFilteredTransactions();
+        let yPosition = 30; // Starting position for the transaction rows
+        filteredTransactions.forEach(transaction => {
+            doc.text(transaction.date, 14, yPosition);
+            doc.text(transaction.amount.toString(), 40, yPosition);
+            doc.text(transaction.category, 80, yPosition);
+            doc.text(transaction.subcategory, 120, yPosition);
+            doc.text(transaction.type, 160, yPosition);
+            yPosition += 10; // Move to the next row
+        });
+
+        // Save the PDF
+        doc.save("transactions_report.pdf");
+    });
+
+    // Attach filter functionality to the button
+    document.getElementById('filterButton').addEventListener('click', updateTransactionTable);
+
+    // Initialize the table when the page loads
+    window.onload = function () {
+        updateTransactionTable();
+    };
+</script>
+</body>
+</html>
+{% endblock %}

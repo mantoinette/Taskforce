@@ -4,12 +4,14 @@ from django.db.models import Sum
 from .models import Account, Transaction, Budget, Category
 from .forms import TransactionForm, BudgetForm, ReportForm
 
+
+
 # View to track transactions
 def track_transactions(request):
-    accounts = Account.objects.filter(user=request.user)
+    # accounts = Account.objects.filter(user=request.user)
     transactions = Transaction.objects.filter(user=request.user).order_by('-date')
     return render(request, 'track.html', {  # No 'transactions/' prefix here
-        'accounts': accounts,
+        # 'accounts': accounts,
         'transactions': transactions,
     })
 
@@ -46,3 +48,6 @@ def manage_budget(request):
         'form': form,
         'budgets': budgets,
     })
+
+def home(request):
+    return render(request, 'home.html')

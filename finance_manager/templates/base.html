@@ -32,6 +32,34 @@
             margin: 0;
         }
 
+        /* Navbar styles */
+        .navbar {
+            background-color: #34495E;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #1ABC9C;
+        }
+
+        /* Main content styling */
         main {
             padding: 40px;
             display: flex;
@@ -96,9 +124,14 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Wallet Web Application</h1>
-    </header>
+    <!-- Navbar -->
+    <div class="navbar d-flex justify-content-center">
+        <ul>
+            <li><a href="{% url 'track_transactions' %}">Transactions</a></li>
+            <li><a href="{% url 'generate_report' %}">Reports</a></li>
+            <li><a href="{% url 'manage_budget' %}">Budget</a></li>
+        </ul>
+    </div>
 
     <main>
         <div class="content-wrapper">
