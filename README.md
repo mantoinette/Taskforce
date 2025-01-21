@@ -61,7 +61,7 @@ Alternatively, use the URL configured in your settings.
 - **Backend**: Powered by Django (or your preferred backend framework).
 - **Front-end**: Uses Bootstrap for styling and JavaScript for interactivity.
 - **Templates**: Contains HTML templates for the user interface.
-- **Static Files**: Includes CSS, JavaScript, and images.
+- **Static Files**: Includes CSS, JavaScript
 
 ---
 
