@@ -8,7 +8,7 @@ The **Transaction Tracking System** is a web application designed to help users 
    - Amount
    - Category
    - Subcategory
-   - Account type (Momo money., Bank, Cash).
+   - Account type (Mobile money, Bank, Cash).
 2. **Track Transactions**: View all added transactions in a dynamic and searchable table.
 3. **Budget Alerts**: Receive notifications when expenses exceed a predefined budget limit.
 4. **Download PDF Report**: Generate and download transaction reports in PDF format for easy record-keeping.
