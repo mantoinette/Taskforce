@@ -2,16 +2,19 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import Sum
 from .models import Account, Transaction, Budget, Category
+from django.contrib.auth.decorators import login_required
 from .forms import TransactionForm, BudgetForm, ReportForm
 
 
 
 # View to track transactions
 def track_transactions(request):
-    # accounts = Account.objects.filter(user=request.user)
+    if not request.user.is_authenticated:
+        return redirect('/admin/')
+    accounts = Account.objects.filter(user=request.user)
     transactions = Transaction.objects.filter(user=request.user).order_by('-date')
     return render(request, 'track.html', {  # No 'transactions/' prefix here
-        # 'accounts': accounts,
+        'accounts': accounts,
         'transactions': transactions,
     })
 
@@ -33,7 +36,10 @@ def generate_report(request):
     return render(request, 'generate_report.html', {'form': form})  # Updated path
 
 # View to manage the user's budget
+# @login_required(login_url='/admin') 
 def manage_budget(request):
+    if not request.user.is_authenticated:
+        return redirect('/admin/')
     budgets = Budget.objects.filter(user=request.user)
     if request.method == 'POST':
         form = BudgetForm(request.POST)
