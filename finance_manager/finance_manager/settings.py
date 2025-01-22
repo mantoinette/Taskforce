@@ -13,6 +13,10 @@ SECRET_KEY = 'django-insecure-b62#9p!rnivny#ik8_g7rbpdsjj_yqpu7xi^it^%qk&4aj2ag-
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'https://taskforce-udz8.onrender.com',  # Replace with your actual domain
+]
+
 
 # Application definition
 INSTALLED_APPS = [
