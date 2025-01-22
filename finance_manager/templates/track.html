@@ -47,6 +47,14 @@
             margin-bottom: 20px;
             text-align: center;
         }
+
+        .toast-container {
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            z-index: 9999;
+        }
+
     </style>
 </head>
 
@@ -102,7 +110,13 @@
         </div>
 
         <!-- Budget Alert -->
-        <div id="budgetAlert" class="alert" role="alert" style="display: none;"></div>
+        <div id="budgetAlert" class="alert alert-warning" role="alert" style="display: none;">
+            Expense exceeds your target budget!
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div class="toast-container" id="toastContainer"></div>
+
     </div>
 
     <!-- Include Bootstrap JS -->
@@ -160,13 +174,23 @@
                 account,
             };
             let balance = parseFloat(localStorage.getItem('currentBalance')) || 0; // Retrieve balance or initialize to 0
+            let targetBudget = parseFloat(localStorage.getItem('budgetLimit')) || 0;
 
             // Check if the transaction is an expense and if the amount exceeds the current balance
             if (type === "Expense" && amount > balance) {
                 // Display an alert to notify the user
                 alert("Insufficient balance for this transaction.");
                 return; // Stop further execution and don't deduct the amount
-            }/*  */
+            }
+            if (type === "Expense" && amount > targetBudget) {
+                // Display a visual notification (alert or toast) for exceeding budget
+                showToast("Expense exceeds your target budget.");
+                document.getElementById("budgetAlert").style.display = "block"; // Show the alert
+                setTimeout(() => {
+                    document.getElementById("budgetAlert").style.display = "none"; // Hide after 5 seconds
+                }, 5000);
+                return; // Stop further execution and don't deduct the amount
+            }
 
             // Retrieve existing transactions from localStorage or initialize an empty array
             const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -174,9 +198,7 @@
             // Add the new transaction to the array
             transactions.push(transaction);
 
-
             // Update balance based on transaction type
-            
             if (type === "Income") {
                 balance += amount; // Add income to balance
             } else if (type === "Expense") {
@@ -197,6 +219,25 @@
             document.getElementById('transactionForm').reset();
         });
 
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast show';
+            toast.style = 'position: relative; top: 0; margin-bottom: 10px;';
+            toast.innerHTML = `
+                <div class="toast-body bg-warning text-dark">
+                    ${message}
+                </div>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 3000);
+        }
 
         // Update category and subcategory dropdowns based on transaction type
         document.getElementById('transactionType').addEventListener('change', function () {
