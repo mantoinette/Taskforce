@@ -5,6 +5,7 @@
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,223 +17,243 @@
         body {
             background-color: #f8f9fa;
         }
-        .form-container, .transactions-container {
+
+        .form-container,
+        .transactions-container {
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
-        .form-container h2, .transactions-container h2 {
+
+        .form-container h2,
+        .transactions-container h2 {
             color: #2C3E50;
         }
+
         .alert {
             margin-top: 20px;
             text-align: center;
         }
-        .transaction-table th, .transaction-table td {
+
+        .transaction-table th,
+        .transaction-table td {
             text-align: center;
             vertical-align: middle;
         }
+
         .balance-container {
             margin-bottom: 20px;
             text-align: center;
         }
     </style>
 </head>
+
 <body>
-<div class="container mt-4">
-    <!-- Balance Display -->
-    <div class="balance-container">
-        <h3>Current Balance: <span id="currentBalance">0.00</span></h3>
+    <div class="container mt-4">
+        <!-- Balance Display -->
+        <div class="balance-container">
+            <h3>Current Balance: <span id="currentBalance">0.00</span></h3>
+        </div>
+
+        <!-- Transaction Form -->
+        <div class="form-container">
+            <h2 class="text-center">Add Transaction</h2>
+            <form id="transactionForm" class="row g-3">
+                <div class="col-md-6">
+                    <label for="transactionAmount" class="form-label">Amount</label>
+                    <input type="number" id="transactionAmount" name="amount" class="form-control"
+                        placeholder="Enter amount" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="transactionType" class="form-label">Transaction Type</label>
+                    <select id="transactionType" name="type" class="form-select" required>
+                        <option value="" disabled selected>Select type</option>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="transactionCategory" class="form-label">Category</label>
+                    <select id="transactionCategory" name="category" class="form-select" required>
+                        <option value="" disabled selected>Select category</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="transactionSubcategory" class="form-label">Subcategory</label>
+                    <select id="transactionSubcategory" name="subcategory" class="form-select" required>
+                        <option value="" disabled selected>Select subcategory</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="transactionAccount" class="form-label">Account</label>
+                    <select id="transactionAccount" name="Account" class="form-select" required>
+                        <option value="" disabled selected>Select account</option>
+                        <option value="Bank">Bank</option>
+                        <option value="Mobile Money">Mobile Money</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary w-100">Save Transaction</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Budget Alert -->
+        <div id="budgetAlert" class="alert" role="alert" style="display: none;"></div>
     </div>
 
-    <!-- Transaction Form -->
-    <div class="form-container">
-        <h2 class="text-center">Add Transaction</h2>
-        <form id="transactionForm" class="row g-3">
-            <div class="col-md-6">
-                <label for="transactionAmount" class="form-label">Amount</label>
-                <input type="number" id="transactionAmount" name="amount" class="form-control" placeholder="Enter amount" required>
-            </div>
-            <div class="col-md-6">
-                <label for="transactionType" class="form-label">Transaction Type</label>
-                <select id="transactionType" name="type" class="form-select" required>
-                    <option value="" disabled selected>Select type</option>
-                    <option value="Income">Income</option>
-                    <option value="Expense">Expense</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="transactionCategory" class="form-label">Category</label>
-                <select id="transactionCategory" name="category" class="form-select" required>
-                    <option value="" disabled selected>Select category</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="transactionSubcategory" class="form-label">Subcategory</label>
-                <select id="transactionSubcategory" name="subcategory" class="form-select" required>
-                    <option value="" disabled selected>Select subcategory</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="transactionAccount" class="form-label">Account</label>
-                <select id="transactionAccount" name="Account" class="form-select" required>
-                    <option value="" disabled selected>Select account</option>
-                    <option value="Bank">Bank</option>
-                    <option value="Mobile Money">Mobile Money</option>
-                    <option value="Cash">Cash</option>
-                </select>
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary w-100">Save Transaction</button>
-            </div>
-        </form>
-    </div>
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let transactions = [];
+        let balance = 0; // Track current balance
+        let budgetLimit = 0;
 
-    <!-- Budget Alert -->
-    <div id="budgetAlert" class="alert" role="alert" style="display: none;"></div>
-</div>
+        // Categories and subcategories for Income
+        const incomeCategories = {
+            "Work": ["Salary", "Bonus", "Freelance"],
+            "Loan": ["Personal", "Car", "Home"],
+        };
 
-<!-- Include Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let transactions = [];
-    let balance = 0; // Track current balance
-    let budgetLimit = 0;
+        // Categories and subcategories for Expense
+        const expenseCategories = {
+            "Groceries": ["Food", "Snacks", "Beverages"],
+            "Rent": ["House", "Office"],
+            "Entertainment": ["Movies", "Games", "Books"],
+        };
 
-    // Categories and subcategories for Income
-    const incomeCategories = {
-        "Work": ["Salary", "Bonus", "Freelance"],
-        "Loan": ["Personal", "Car", "Home"],
-    };
+        // Initialize balance and categories from localStorage
+        window.onload = function () {
+            const savedBalance = localStorage.getItem('currentBalance');
+            if (savedBalance) {
+                balance = parseFloat(savedBalance);
+                document.getElementById('currentBalance').textContent = balance.toFixed(2);
+            }
 
-    // Categories and subcategories for Expense
-    const expenseCategories = {
-        "Groceries": ["Food", "Snacks", "Beverages"],
-        "Rent": ["House", "Office"],
-        "Entertainment": ["Movies", "Games", "Books"],
-    };
+            const savedBudget = localStorage.getItem('budgetLimit');
+            if (savedBudget) {
+                budgetLimit = parseFloat(savedBudget);
+            }
+        };
 
-    // Initialize balance and categories from localStorage
-    window.onload = function () {
-        const savedBalance = localStorage.getItem('currentBalance');
-        if (savedBalance) {
-            balance = parseFloat(savedBalance);
+        // Handle form submission
+        document.getElementById('transactionForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get form data
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const category = document.getElementById('transactionCategory').value;
+            const subcategory = document.getElementById('transactionSubcategory').value;
+            const type = document.getElementById('transactionType').value;
+            const account = document.getElementById('transactionAccount').value;
+
+            // Create transaction object
+            const transaction = {
+                date: new Date().toLocaleDateString(),
+                amount,
+                category,
+                subcategory,
+                type,
+                account,
+            };
+            let balance = parseFloat(localStorage.getItem('currentBalance')) || 0; // Retrieve balance or initialize to 0
+
+            // Check if the transaction is an expense and if the amount exceeds the current balance
+            if (type === "Expense" && amount > balance) {
+                // Display an alert to notify the user
+                alert("Insufficient balance for this transaction.");
+                return; // Stop further execution and don't deduct the amount
+            }/*  */
+
+            // Retrieve existing transactions from localStorage or initialize an empty array
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+            // Add the new transaction to the array
+            transactions.push(transaction);
+
+
+            // Update balance based on transaction type
+            
+            if (type === "Income") {
+                balance += amount; // Add income to balance
+            } else if (type === "Expense") {
+                balance -= amount; // Deduct expense from balance
+            }
+
+            // Save the updated transactions and balance to localStorage
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('currentBalance', balance.toFixed(2));
+
+            // Update balance display
             document.getElementById('currentBalance').textContent = balance.toFixed(2);
-        }
 
-        const savedBudget = localStorage.getItem('budgetLimit');
-        if (savedBudget) {
-            budgetLimit = parseFloat(savedBudget);
-        }
-    };
+            // Update transaction table
+            updateTransactionTable();
 
-    // Handle form submission
-    document.getElementById('transactionForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    // Get form data
-    const amount = parseFloat(document.getElementById('transactionAmount').value);
-    const category = document.getElementById('transactionCategory').value;
-    const subcategory = document.getElementById('transactionSubcategory').value;
-    const type = document.getElementById('transactionType').value;
-    const account = document.getElementById('transactionAccount').value;
-
-    // Create transaction object
-    const transaction = {
-        date: new Date().toLocaleDateString(),
-        amount,
-        category,
-        subcategory,
-        type,
-        account,
-    };
-
-    // Retrieve existing transactions from localStorage or initialize an empty array
-    const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-
-    // Add the new transaction to the array
-    transactions.push(transaction);
-
-    // Update balance based on transaction type
-    let balance = parseFloat(localStorage.getItem('currentBalance')) || 0; // Retrieve balance or initialize to 0
-    if (type === "Income") {
-        balance += amount; // Add income to balance
-    } else if (type === "Expense") {
-        balance -= amount; // Deduct expense from balance
-    }
-
-    // Save the updated transactions and balance to localStorage
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-    localStorage.setItem('currentBalance', balance.toFixed(2));
-
-    // Update balance display
-    document.getElementById('currentBalance').textContent = balance.toFixed(2);
-
-    // Update transaction table
-    updateTransactionTable();
-
-    // Reset the form
-    document.getElementById('transactionForm').reset();
-});
+            // Reset the form
+            document.getElementById('transactionForm').reset();
+        });
 
 
-    // Update category and subcategory dropdowns based on transaction type
-    document.getElementById('transactionType').addEventListener('change', function () {
-        const type = this.value;
-        const categorySelect = document.getElementById('transactionCategory');
-        const subcategorySelect = document.getElementById('transactionSubcategory');
+        // Update category and subcategory dropdowns based on transaction type
+        document.getElementById('transactionType').addEventListener('change', function () {
+            const type = this.value;
+            const categorySelect = document.getElementById('transactionCategory');
+            const subcategorySelect = document.getElementById('transactionSubcategory');
 
-        // Clear previous options
-        categorySelect.innerHTML = '<option value="" disabled selected>Select category</option>';
-        subcategorySelect.innerHTML = '<option value="" disabled selected>Select subcategory</option>';
+            // Clear previous options
+            categorySelect.innerHTML = '<option value="" disabled selected>Select category</option>';
+            subcategorySelect.innerHTML = '<option value="" disabled selected>Select subcategory</option>';
 
-        if (type === "Income") {
-            // Populate income categories
-            for (const category in incomeCategories) {
-                const option = document.createElement("option");
-                option.value = category;
-                option.textContent = category;
-                categorySelect.appendChild(option);
+            if (type === "Income") {
+                // Populate income categories
+                for (const category in incomeCategories) {
+                    const option = document.createElement("option");
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                }
+            } else if (type === "Expense") {
+                // Populate expense categories
+                for (const category in expenseCategories) {
+                    const option = document.createElement("option");
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                }
             }
-        } else if (type === "Expense") {
-            // Populate expense categories
-            for (const category in expenseCategories) {
-                const option = document.createElement("option");
-                option.value = category;
-                option.textContent = category;
-                categorySelect.appendChild(option);
+        });
+
+        // Update subcategories based on selected category
+        document.getElementById('transactionCategory').addEventListener('change', function () {
+            const category = this.value;
+            const subcategorySelect = document.getElementById('transactionSubcategory');
+            const type = document.getElementById('transactionType').value;
+
+            // Clear previous subcategory options
+            subcategorySelect.innerHTML = '<option value="" disabled selected>Select subcategory</option>';
+
+            if (type === "Income" && incomeCategories[category]) {
+                incomeCategories[category].forEach(subcategory => {
+                    const option = document.createElement("option");
+                    option.value = subcategory;
+                    option.textContent = subcategory;
+                    subcategorySelect.appendChild(option);
+                });
+            } else if (type === "Expense" && expenseCategories[category]) {
+                expenseCategories[category].forEach(subcategory => {
+                    const option = document.createElement("option");
+                    option.value = subcategory;
+                    option.textContent = subcategory;
+                    subcategorySelect.appendChild(option);
+                });
             }
-        }
-    });
-
-    // Update subcategories based on selected category
-    document.getElementById('transactionCategory').addEventListener('change', function () {
-        const category = this.value;
-        const subcategorySelect = document.getElementById('transactionSubcategory');
-        const type = document.getElementById('transactionType').value;
-
-        // Clear previous subcategory options
-        subcategorySelect.innerHTML = '<option value="" disabled selected>Select subcategory</option>';
-
-        if (type === "Income" && incomeCategories[category]) {
-            incomeCategories[category].forEach(subcategory => {
-                const option = document.createElement("option");
-                option.value = subcategory;
-                option.textContent = subcategory;
-                subcategorySelect.appendChild(option);
-            });
-        } else if (type === "Expense" && expenseCategories[category]) {
-            expenseCategories[category].forEach(subcategory => {
-                const option = document.createElement("option");
-                option.value = subcategory;
-                option.textContent = subcategory;
-                subcategorySelect.appendChild(option);
-            });
-        }
-    });
-</script>
+        });
+    </script>
 </body>
+
 </html>
 {% endblock %}
